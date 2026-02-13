@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>A Special Surprise ❤️</title>
+    <style>
+        /* Base Styles */
+        * { box-sizing: border-box; padding: 0; margin: 0; }
+        body {
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background: linear-gradient(135deg, #ff9a9e 0%, #fad0c4 100%);
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            overflow-x: hidden;
+            padding: 20px;
+        }
+
+        .card {
+            background: rgba(255, 255, 255, 0.98);
+            border-radius: 20px;
+            padding: 2.5rem;
+            box-shadow: 0 15px 50px rgba(0, 0, 0, 0.2);
+            text-align: center;
+            max-width: 450px;
+            width: 100%;
+            position: relative;
+            z-index: 10;
+            transition: all 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            max-height: 140vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* Background Images Styling */
+        .bg-photos {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 1; /* Behind the card */
+            display: none; /* Hidden until the end */
+        }
+
+        .bg-photos.active { display: block; }
+
+        .corner-img {
+            position: absolute;
+            width: 180px; /* Adjust size as you like */
+            height: auto;
+            border-radius: 12px;
+            border: 5px solid white;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.15);
+            opacity: 0;
+            animation: fadeIn 2s forwards;
+        }
+
+        /* Specific positions for the 4 images */
+        .left-top { top: 5%; left: 5%; transform: rotate(-10deg); }
+        .left-bottom { bottom: 5%; left: 8%; transform: rotate(5deg); animation-delay: 0.5s; }
+        .right-top { top: 10%; right: 5%; transform: rotate(12deg); animation-delay: 1s; }
+        .right-bottom { bottom: 8%; right: 7%; transform: rotate(-8deg); animation-delay: 1.5s; }
+
+        .card.expanded { max-width: 800px; padding: 3rem; }
+
+        .heart-svg { fill: #ff4b6e; transform-origin: center; animation: pulse 1.5s ease-in-out infinite; flex-shrink: 0; }
+        
+        .message {
+            font-size: 1.6rem; color: #333; margin: 1rem 0;
+            opacity: 0; transform: translateY(20px);
+            animation: fadeIn 1s ease-out forwards;
+        }
+
+        .final-letter {
+            font-size: 1.15rem; color: #444; line-height: 1.8; text-align: left;
+            overflow-y: auto; padding-right: 15px; margin-top: 20px;
+            opacity: 0; animation: fadeIn 2s ease-out forwards 0.5s;
+            scrollbar-width: thin; scrollbar-color: #ff9a9e transparent;
+        }
+
+        .final-letter p { margin-bottom: 1.5rem; }
+        .final-letter::-webkit-scrollbar { width: 6px; }
+        .final-letter::-webkit-scrollbar-thumb { background-color: #ff9a9e; border-radius: 10px; }
+
+        .btn-container { display: flex; gap: 1rem; justify-content: center; margin: 1.5rem 0; position: relative; min-height: 60px; }
+        .btn {
+            background: #ff4b6e; color: white; border: none; padding: 1rem 2.2rem;
+            border-radius: 50px; font-size: 1.2rem; cursor: pointer; transition: 0.3s;
+            z-index: 11;
+        }
+        .btn:hover { background: #ff3356; transform: scale(1.1); }
+        .btn.no { background: #777; position: relative; z-index: 100; }
+
+        .question { display: none; }
+        .question.active { display: block; }
+
+        .hover-img { display: none; margin-top: 20px; animation: fadeIn 0.3s ease-in; }
+        .hover-img img { width: 190px; border-radius: 15px; border: 3px solid #ff4b6e; }
+
+        .firework { position: absolute; width: 6px; height: 6px; border-radius: 50%; pointer-events: none; z-index: 5; }
+        .floating-hearts { position: absolute; width: 100%; height: 100%; pointer-events: none; top: 0; left: 0; }
+
+        @keyframes pulse { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.15); } }
+        @keyframes fadeIn { to { opacity: 1; transform: translateY(0); } }
+        @keyframes floatUp { 
+            0% { transform: translateY(0) rotate(0deg); opacity: 1; } 
+            100% { transform: translateY(-110vh) rotate(360deg); opacity: 0; } 
+        }
+        @keyframes burst {
+            0% { transform: translate(0, 0); opacity: 1; }
+            100% { transform: translate(var(--x), var(--y)); opacity: 0; }
+        }
+    </style>
+</head>
+<body>
+
+    <audio id="bgMusic" loop>
+        <source src="assets/audio/hedi.mp3" type="audio/mpeg">
+    </audio>
+
+    <div class="bg-photos" id="finalPhotos">
+        <img src="assets/images/1.jpeg" class="corner-img left-top" alt="Memory 1">
+        <img src="assets/images/2.jpeg" class="corner-img left-bottom" alt="Memory 2">
+        <img src="assets/images/3.jpeg" class="corner-img right-top" alt="Memory 3">
+        <img src="assets/images/4.jpeg" class="corner-img right-bottom" alt="Memory 4">
+    </div>
+
+    <div class="card" id="mainCard">
+        <div class="heart-container">
+            <svg viewBox="0 0 100 100" width="80" height="80">
+                <path class="heart-svg" d="M50 88.9L16.7 55.6C7.2 46.1 7.2 30.9 16.7 21.4s24.7-9.5 34.2 0L50 20.5l-0.9 0.9c9.5-9.5 24.7-9.5 34.2 0s9.5 24.7 0 34.2L50 88.9z"/>
+            </svg>
+        </div>
+
+        <div class="question active" id="q1">
+            <h1 class="message">Azizti will you be my Valentine? 💝</h1>
+            <div class="btn-container">
+                <button class="btn" onclick="startEverything(1)">Yes!</button>
+                <button class="btn no" onmouseover="dodgeNo(1)">No</button>
+            </div>
+        </div>
+
+        <div class="question" id="q2">
+            <h1 class="message">Would you like to go on a date with me? 🌹</h1>
+            <div class="btn-container">
+                <button class="btn" onclick="nextQuestion(2)">Of course!</button>
+                <button class="btn no" onmouseover="dodgeNo(2)">No way</button>
+            </div>
+            <div id="hover-img-2" class="hover-img">
+<img src="https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExODlhMG9qZ2F3dzE0eHByM3ZzYnd4MzhsczV3MTR0eW9reW5pZjBwYiZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/8vQSQ3cNXuDGo/giphy.gif">            </div>
+        </div>
+
+        <div class="question" id="q3">
+            <h1 class="message">Can I have a hug? 🤗</h1>
+            <div class="btn-container">
+                <button class="btn" onclick="nextQuestion(3)">Come here!</button>
+                <button class="btn no" onmouseover="dodgeNo(3)">Nope</button>
+            </div>
+            <div id="hover-img-3" class="hover-img">
+<img src="https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExODlhMG9qZ2F3dzE0eHByM3ZzYnd4MzhsczV3MTR0eW9reW5pZjBwYiZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/8vQSQ3cNXuDGo/giphy.gif">            </div>
+        </div>
+
+        <div class="question" id="final">
+            <h1 class="message">To My World ❤️</h1>
+            <div class="final-letter">
+                <p>Amira, Nheb nkolik rani nhebk Barcha Barcha Barcha, na3ref enou a7na nhar hedha mane7tfalouch bih ama 7abyt nfar7ik w ndhakkrek kima nkolik kol youm rakk a3za w ahsen tofla andi fel denyua, enti chamsi enti hobi enti nour 3inaya, enti denyti lkol,
+❤️</p>
+                <p>m3ak enti saropu barcha hajet tfara7 w 3omry ma7syt rouhik nakes 7enya w la enik b3ida 3leya, </p>
+                <p>na3ref enou el diistance hadhy heya barcha alik w enik you need me a lot, but inchlh we will win fel lkher w nkounou bahdhy badhna ye ropuhii Hasilou ye omri mantawlch alik nheb nkademlik el kelmtin hadhom ala katherni narefk theb dima haja bel anglais hhh ye mahboula ❤️❤️
+</p>
+                <p> I just want you to know how much you mean to me. Every time I see you, hear your voice, or even think about you, my day instantly gets better. You have this incredible way of making everything brighter and more joyful, just by being yourself.
+</p>
+                <p>I love your smile, your laugh, your kindness, and all the little things that make you, you. Being with you feels like i own the whole world betweens my hands, like I’ve known you forever, and I can’t imagine my life without you in it.
+</p>
+                <p>Today, I just want to celebrate you and let you know how grateful I am to have you in my life. You’re truly special, and I hope this lovely day is as wonderful as you are. ❤️</p>
+            <p>N7ebek Amira </p>
+            
+            </div>
+        </div>
+
+        <div class="floating-hearts" id="heartBox"></div>
+    </div>
+
+    <script>
+        const music = document.getElementById('bgMusic');
+        const card = document.getElementById('mainCard');
+
+        function startEverything(qNum) {
+            music.play().catch(e => console.log("Audio play blocked until click."));
+            nextQuestion(qNum);
+        }
+
+        function nextQuestion(qNum) {
+            document.getElementById(`q${qNum}`).classList.remove('active');
+            if (qNum < 3) {
+                document.getElementById(`q${qNum + 1}`).classList.add('active');
+            } else {
+                card.classList.add('expanded');
+                document.getElementById('final').classList.add('active');
+                // SHOW THE IMAGES HERE
+                document.getElementById('finalPhotos').classList.add('active');
+                document.querySelectorAll('.hover-img').forEach(img => img.style.display = 'none');
+                celebrate();
+            }
+        }
+
+        function dodgeNo(qNum) {
+            const activeQ = document.querySelector('.question.active');
+            const btnNo = activeQ.querySelector('.btn.no');
+            if (qNum === 2 || qNum === 3) {
+                document.getElementById(`hover-img-${qNum}`).style.display = 'block';
+            }
+            btnNo.style.position = 'absolute';
+            btnNo.style.left = Math.random() * 80 + '%';
+            btnNo.style.top = Math.random() * 80 + '%';
+        }
+
+        function celebrate() {
+            const heartBox = document.getElementById('heartBox');
+            setInterval(() => {
+                const heart = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+                heart.setAttribute('viewBox', '0 0 100 100');
+                const size = 15 + Math.random() * 25;
+                heart.style.width = size + 'px';
+                heart.style.position = 'absolute';
+                heart.style.left = Math.random() * 100 + '%';
+                heart.style.bottom = '-5%';
+                heart.style.animation = `floatUp ${3 + Math.random() * 3}s linear forwards`;
+                const path = document.createElementNS("http://www.w3.org/2000/svg", "path");
+                path.setAttribute('d', 'M50 88.9L16.7 55.6C7.2 46.1 7.2 30.9 16.7 21.4s24.7-9.5 34.2 0L50 20.5l-0.9 0.9c9.5-9.5 24.7-9.5 34.2 0s9.5 24.7 0 34.2L50 88.9z');
+                path.style.fill = `hsl(${Math.random() * 40 + 330}, 100%, 70%)`;
+                heart.appendChild(path);
+                heartBox.appendChild(heart);
+                setTimeout(() => heart.remove(), 5000);
+            }, 100);
+
+            setInterval(() => {
+                const x = Math.random() * window.innerWidth;
+                const y = Math.random() * window.innerHeight;
+                for (let i = 0; i < 30; i++) {
+                    const p = document.createElement('div');
+                    p.className = 'firework';
+                    p.style.left = x + 'px'; p.style.top = y + 'px';
+                    p.style.backgroundColor = ['#ff4b6e', '#ffd700', '#ffffff'][Math.floor(Math.random() * 3)];
+                    p.style.setProperty('--x', (Math.random() - 0.5) * 500 + 'px');
+                    p.style.setProperty('--y', (Math.random() - 0.5) * 500 + 'px');
+                    p.style.animation = 'burst 1.5s ease-out forwards';
+                    document.body.appendChild(p);
+                    setTimeout(() => p.remove(), 1500);
+                }
+            }, 500);
+        }
+    </script>
+</body>
+</html>
